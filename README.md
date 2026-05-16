@@ -71,6 +71,8 @@ replies `Can't parse request.` and drops the connection.
 | `/get_params.cgi` | Read all configurable params |
 | `/set_params.cgi?<k>=<v>&save=1` | Write params (see "accepted fields" below) |
 | `/get_properties.cgi` | Static device info |
+| `/get_status.cgi` | Runtime state snapshot: `time, alarm, record, network, wifi_signal_level, disk_capability, ddns, ntp, upnp, ...` |
+| `/get_log.cgi` | Recent auth-event log (each entry: `event, t, user, ip`) |
 | `/snapshot.cgi?resolution=N` | Single JPEG. Valid `N`: 2, 6, 11. *Side effect: persists N as the global `resolution` field.* |
 | `/snapshot.cgi?streamid=N` | Single JPEG; `N` ∈ {0..4}. Renders at the current global `resolution` (does NOT use the per-`streamN_resolution` profile, despite the name). ~80 % faster per request than the `resolution=` variant. |
 | `/check_user.cgi` | Foscam-style auth check. Returns `var group=131071; var user='admin'; var pwd='';` on success, `var group=-1;` on failure. |
@@ -112,6 +114,14 @@ properties.
 - **`resolution=N` persists.** `/snapshot.cgi?resolution=2` flips the camera's
   stored `resolution` field to 2, which then affects subsequent `streamid=`
   polls. Restore with `set_params.cgi?resolution=11&save=1`.
+- **`telnetd=1` is patched out.** The Micro-Drone-era backdoor
+  `set_params.cgi?telnetd=1&save=1&reboot=1` is accepted (`error:0`) and the
+  camera reboots, but the `telnetd` field reverts to 0 and TCP/23 stays
+  closed. None of 27 plausible aliases (`telnet`, `ssh`, `dropbear`, `debug`,
+  `console`, `ate`, `factory_debug`, `developer`, `manuf_mode`, ...) are real
+  fields either — all silently dropped. No software-only path to a shell on
+  this firmware; remaining root routes are UART pads on the board or
+  `/upgrade.cgi` firmware injection.
 
 ### Probed and confirmed not to exist on this firmware
 
@@ -119,7 +129,7 @@ properties.
 `videostream.asf`, `video.mjpg`, `video.cgi`, `audiostream.cgi`, `audio.cgi`,
 `audio.pcm`, `video.h264`, `videostream.h264`, `videostream.flv`,
 `raw_video.cgi`, `login.cgi`, `check_login.cgi`, `camera_control.cgi`,
-`decoder_control.cgi`, `reboot.cgi`, `get_status.cgi`, `get_camera_params.cgi`,
+`decoder_control.cgi`, `reboot.cgi`, `get_camera_params.cgi`,
 `get_misc.cgi`, `camera_params.cgi`, `get_factory_param.cgi`, `get_alarm.cgi`,
 `set_alarm.cgi`, `set_misc.cgi`, `set_datetime.cgi`, `set_network.cgi`,
 `set_wifi.cgi`, `set_users.cgi`, `record.cgi`, `get_record_list.cgi`,
@@ -129,6 +139,13 @@ properties.
 `set_license.cgi`, `search_snapshot.cgi`, `del_record.cgi`,
 `unregister_from_sosocam.cgi`, `relogin_to_sosocam.cgi`, `index.html`,
 `main.html`, `/`. No web UI is served.
+
+Also probed against the [Micro Drone 3.0 Reecam build endpoint list](http://gw.tnode.com/drone/micro-drone-3-0-camera-api/)
+and confirmed absent on this MOQO firmware: `videostream.cgi`, `av.asf`,
+`backup.cgi`, `wifi_scan.cgi`, `test_wifi_connected.cgi`,
+`is_mjpeg_stream_exist.cgi`, `get_badauth.cgi`, `get_session_list.cgi`,
+`get_cur_ir_adc_value.cgi`. There is **no HTTP video stream** on this build —
+live video is ICAP-only.
 
 ## ICAP binary protocol (live video)
 
