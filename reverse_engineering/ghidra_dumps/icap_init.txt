@@ -1,0 +1,177 @@
+Block at 0x2fc824: name=.data initialized=true start=002fc000 end=002fe4c7
+//// no function containing 0x0002fffc
+//// InitBlowfish @ 0005d298
+
+void InitBlowfish(int param_1,int param_2,uint param_3)
+
+{
+  undefined4 local_20;
+  undefined4 local_1c;
+  int local_18;
+  ushort local_12;
+  int local_10;
+  uint local_c;
+  
+  local_12 = 0;
+  for (local_10 = 0; local_10 < 0x100; local_10 = local_10 + 1) {
+    *(undefined4 *)(param_1 + local_10 * 4) = *(undefined4 *)(&DAT_002fc828 + local_10 * 4);
+    *(undefined4 *)(param_1 + (local_10 + 0x100) * 4) =
+         *(undefined4 *)(&DAT_002fcc28 + local_10 * 4);
+    *(undefined4 *)(param_1 + (local_10 + 0x200) * 4) =
+         *(undefined4 *)(&DAT_002fd028 + local_10 * 4);
+    *(undefined4 *)(param_1 + (local_10 + 0x300) * 4) =
+         *(undefined4 *)(&DAT_002fd428 + local_10 * 4);
+  }
+  for (local_10 = 0; local_10 < 0x12; local_10 = local_10 + 1) {
+    *(undefined4 *)(param_1 + (local_10 + 0x400) * 4) = 0;
+  }
+  for (local_10 = 0; local_10 < 0x12; local_10 = local_10 + 1) {
+    local_c = 0;
+    for (local_18 = 0; local_18 < 4; local_18 = local_18 + 1) {
+      local_c = local_c << 8 | (uint)*(byte *)(param_2 + (uint)local_12);
+      local_12 = local_12 + 1;
+      if (param_3 <= local_12) {
+        local_12 = 0;
+      }
+    }
+    *(uint *)(param_1 + (local_10 + 0x400) * 4) =
+         *(uint *)(param_1 + (local_10 + 0x400) * 4) ^ local_c;
+  }
+  local_1c = 0;
+  local_20 = 0;
+  for (local_10 = 0; local_10 < 0x12; local_10 = local_10 + 2) {
+    Blowfish_encipher(param_1,&local_1c,&local_20);
+    *(undefined4 *)(param_1 + (local_10 + 0x400) * 4) = local_1c;
+    *(undefined4 *)(param_1 + (local_10 + 0x401) * 4) = local_20;
+  }
+  for (local_10 = 0; local_10 < 4; local_10 = local_10 + 1) {
+    for (local_12 = 0; local_12 < 0x100; local_12 = local_12 + 2) {
+      Blowfish_encipher(param_1,&local_1c,&local_20);
+      *(undefined4 *)(param_1 + (local_10 * 0x100 + (uint)local_12) * 4) = local_1c;
+      *(undefined4 *)(param_1 + (local_10 * 0x100 + local_12 + 1) * 4) = local_20;
+    }
+  }
+  return;
+}
+
+
+
+//// add_icap_speak_data @ 0005ba78
+
+int add_icap_speak_data(int param_1,undefined4 *param_2)
+
+{
+  undefined2 local_1a;
+  int local_18;
+  int local_14;
+  int local_10;
+  void *local_c;
+  
+  local_1a = 0x19;
+  if (*(int *)(param_1 + 0x1c) < 0x19) {
+    local_18 = param_2[5] + 0x14;
+    local_c = malloc(param_2[5] + 0x1e);
+    if (local_c == (void *)0x0) {
+      local_14 = -3;
+    }
+    else {
+      memcpy(local_c,&DAT_002fc824,4);
+      memcpy((void *)((int)local_c + 4),&local_1a,2);
+      memcpy((void *)((int)local_c + 6),&local_18,4);
+      *(char *)((int)local_c + 10) = (char)*param_2;
+      local_10 = 0xb;
+      memcpy((void *)((int)local_c + 0xb),param_2 + 1,4);
+      local_10 = local_10 + 4;
+      memcpy((void *)((int)local_c + local_10),param_2 + 2,4);
+      local_10 = local_10 + 4;
+      memcpy((void *)((int)local_c + local_10),param_2 + 3,4);
+      local_10 = local_10 + 4;
+      memcpy((void *)((int)local_c + local_10),param_2 + 4,2);
+      *(undefined1 *)((int)local_c + local_10 + 2) = *(undefined1 *)((int)param_2 + 0x12);
+      local_10 = local_10 + 3;
+      memcpy((void *)((int)local_c + local_10),param_2 + 5,4);
+      local_10 = local_10 + 4;
+      memcpy((void *)((int)local_c + local_10),(void *)param_2[6],param_2[5]);
+      local_14 = FUN_0005b3c0(param_1,local_c,local_18 + 10,1);
+      if (local_14 != 0) {
+        free(local_c);
+      }
+    }
+  }
+  else {
+    local_14 = -4;
+  }
+  return local_14;
+}
+
+
+
+//// parse_icap_data_recved @ 0005b0c8
+
+undefined4 parse_icap_data_recved(int *param_1,void *param_2,int *param_3,int *param_4)
+
+{
+  int iVar1;
+  undefined4 local_10;
+  int local_c;
+  
+  local_10 = 1;
+  local_c = 0;
+  while ((local_c < param_1[1] + -3 &&
+         (iVar1 = memcmp((void *)(*param_1 + local_c),&DAT_002fc824,4), iVar1 != 0))) {
+    local_c = local_c + 1;
+  }
+  if (local_c != 0) {
+    param_1[1] = param_1[1] - local_c;
+    if (param_1[1] == 0) {
+      iVar1 = 0;
+    }
+    else {
+      iVar1 = FUN_0005a744(*param_1 + local_c,param_1[1]);
+    }
+    free((void *)*param_1);
+    *param_1 = iVar1;
+    if (*param_1 == 0) {
+      param_1[1] = 0;
+    }
+  }
+  if ((uint)param_1[1] < 10) {
+    local_10 = 0;
+  }
+  else {
+    memcpy(param_2,(void *)(*param_1 + 4),2);
+    memcpy(param_4,(void *)(*param_1 + 6),4);
+    if ((uint)param_1[1] < *param_4 + 10U) {
+      local_10 = 0;
+    }
+    else {
+      if (*param_4 == 0) {
+        iVar1 = 0;
+      }
+      else {
+        iVar1 = FUN_0005a744(*param_1 + 10,*param_4);
+      }
+      *param_3 = iVar1;
+      if ((*param_4 != 0) && (*param_3 == 0)) {
+        *param_4 = 0;
+        local_10 = 0;
+      }
+      param_1[1] = (param_1[1] - *param_4) + -10;
+      if (param_1[1] == 0) {
+        iVar1 = 0;
+      }
+      else {
+        iVar1 = FUN_0005a744(*param_1 + *param_4 + 10,param_1[1]);
+      }
+      free((void *)*param_1);
+      *param_1 = iVar1;
+      if (*param_1 == 0) {
+        param_1[1] = 0;
+      }
+    }
+  }
+  return local_10;
+}
+
+
+

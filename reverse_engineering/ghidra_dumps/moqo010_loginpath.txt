@@ -1,0 +1,476 @@
+//// FUN_00058aec @ 00058aec
+
+int FUN_00058aec(int param_1,undefined4 param_2,undefined4 param_3)
+
+{
+  undefined4 uVar1;
+  int iVar2;
+  undefined4 local_10;
+  char local_9;
+  
+  iVar2 = param_1;
+  if (*(int *)(param_1 + 0x24) == 2) {
+    uVar1 = parse_icap_login2_resp
+                      (*(undefined4 *)(param_1 + 0x104),param_2,param_3,&local_9,&local_10);
+    *(undefined4 *)(param_1 + 0x3c) = uVar1;
+    if (*(int *)(param_1 + 0x3c) == 0) {
+      iVar2 = icap_error_2_camera_error(local_9);
+      *(int *)(param_1 + 0x3c) = iVar2;
+      if (*(int *)(param_1 + 0x3c) == 0) {
+        *(undefined4 *)(param_1 + 0x20) = local_10;
+        *(undefined4 *)(param_1 + 0x24) = 3;
+        if (*(int *)(param_1 + 0xac) != 0) {
+          iVar2 = (**(code **)(param_1 + 0xac))
+                            (*(undefined4 *)(param_1 + 0xa8),*(undefined4 *)(param_1 + 0x24),
+                             *(undefined4 *)(param_1 + 0x3c));
+        }
+      }
+      else {
+        if (local_9 == '\x01') {
+          *(undefined4 *)(param_1 + 0x40) = local_10;
+        }
+        iVar2 = _camera_disconnect(*(undefined4 *)(param_1 + 0x18));
+      }
+    }
+    else {
+      iVar2 = _camera_disconnect(*(undefined4 *)(param_1 + 0x18));
+    }
+  }
+  return iVar2;
+}
+
+
+
+//// FUN_00058978 @ 00058978
+
+int FUN_00058978(int param_1,undefined4 param_2,undefined4 param_3)
+
+{
+  undefined4 uVar1;
+  int iVar2;
+  char *local_c;
+  
+  if (*(int *)(param_1 + 0x24) == 2) {
+    uVar1 = parse_icap_login1_resp(*(undefined4 *)(param_1 + 0x104),param_2,param_3,&local_c);
+    *(undefined4 *)(param_1 + 0x3c) = uVar1;
+    if (*(int *)(param_1 + 0x3c) == 0) {
+      if (*(int *)(param_1 + 0x1c) == 0) {
+        uVar1 = FUN_00056174(local_c);
+        *(undefined4 *)(param_1 + 0x1c) = uVar1;
+        if (*(int *)(param_1 + 0x1c) == 0) {
+          *(undefined4 *)(param_1 + 0x3c) = 0xfffffffd;
+          iVar2 = _camera_disconnect(*(undefined4 *)(param_1 + 0x18));
+          return iVar2;
+        }
+      }
+      else {
+        iVar2 = strcmp(*(char **)(param_1 + 0x1c),local_c);
+        if (iVar2 != 0) {
+          *(undefined4 *)(param_1 + 0x3c) = 0xfffffff8;
+          iVar2 = _camera_disconnect(*(undefined4 *)(param_1 + 0x18));
+          return iVar2;
+        }
+      }
+      uVar1 = add_icap_login2_req(*(undefined4 *)(param_1 + 0x104));
+      *(undefined4 *)(param_1 + 0x3c) = uVar1;
+      if (*(int *)(param_1 + 0x3c) == 0) {
+        iVar2 = FUN_000561b0(param_1);
+        *(int *)(param_1 + 0x3c) = iVar2;
+        param_1 = iVar2;
+      }
+      else {
+        param_1 = _camera_disconnect(*(undefined4 *)(param_1 + 0x18));
+      }
+    }
+    else {
+      param_1 = _camera_disconnect(*(undefined4 *)(param_1 + 0x18));
+    }
+  }
+  return param_1;
+}
+
+
+
+//// FUN_00058c18 @ 00058c18
+
+void FUN_00058c18(int param_1,undefined4 param_2,undefined4 param_3)
+
+{
+  undefined4 uVar1;
+  undefined1 local_9;
+  
+  if (*(int *)(param_1 + 0x24) != 3) {
+    return;
+  }
+  if (*(int *)(param_1 + 0x28) != 1) {
+    return;
+  }
+  uVar1 = parse_icap_result_class_resp(*(undefined4 *)(param_1 + 0x104),param_2,param_3,&local_9);
+  *(undefined4 *)(param_1 + 0x3c) = uVar1;
+  if (*(int *)(param_1 + 0x3c) == 0) {
+    uVar1 = icap_error_2_camera_error(local_9);
+    *(undefined4 *)(param_1 + 0x3c) = uVar1;
+    if (*(int *)(param_1 + 0x3c) == 0) {
+      *(undefined4 *)(param_1 + 0x28) = 2;
+      goto LAB_00058ccc;
+    }
+  }
+  *(undefined4 *)(param_1 + 0x28) = 0;
+LAB_00058ccc:
+  if ((*(int *)(param_1 + 0x28) == 0) && (*(int *)(param_1 + 0x1120) != 0)) {
+    if (*(int *)(*(int *)(param_1 + 0x1120) + 0x18) != 0) {
+      free(*(void **)(*(int *)(param_1 + 0x1120) + 0x18));
+    }
+    free(*(void **)(param_1 + 0x1120));
+    *(undefined4 *)(param_1 + 0x1120) = 0;
+  }
+  if (*(int *)(param_1 + 0xb0) != 0) {
+    (**(code **)(param_1 + 0xb0))
+              (*(undefined4 *)(param_1 + 0xa8),*(undefined4 *)(param_1 + 0x28),
+               *(undefined4 *)(param_1 + 0x3c));
+  }
+  return;
+}
+
+
+
+//// FUN_00058fa8 @ 00058fa8
+
+int FUN_00058fa8(int param_1,undefined4 param_2,undefined4 param_3)
+
+{
+  int iVar1;
+  undefined1 local_9;
+  
+  if (*(int *)(param_1 + 0x24) != 3) {
+    return param_1;
+  }
+  if (*(int *)(param_1 + 0x2c) != 1) {
+    return param_1;
+  }
+  iVar1 = parse_icap_result_class_resp(*(undefined4 *)(param_1 + 0x104),param_2,param_3,&local_9);
+  *(int *)(param_1 + 0x3c) = iVar1;
+  if (*(int *)(param_1 + 0x3c) == 0) {
+    iVar1 = icap_error_2_camera_error(local_9);
+    *(int *)(param_1 + 0x3c) = iVar1;
+    if (*(int *)(param_1 + 0x3c) == 0) {
+      *(undefined4 *)(param_1 + 0x2c) = 2;
+      goto LAB_0005905c;
+    }
+  }
+  *(undefined4 *)(param_1 + 0x2c) = 0;
+LAB_0005905c:
+  if (*(int *)(param_1 + 0xb4) != 0) {
+    iVar1 = (**(code **)(param_1 + 0xb4))
+                      (*(undefined4 *)(param_1 + 0xa8),*(undefined4 *)(param_1 + 0x2c),
+                       *(undefined4 *)(param_1 + 0x3c));
+  }
+  return iVar1;
+}
+
+
+
+//// FUN_0005917c @ 0005917c
+
+int FUN_0005917c(int param_1,undefined4 param_2,undefined4 param_3)
+
+{
+  int iVar1;
+  undefined1 local_9;
+  
+  if (*(int *)(param_1 + 0x24) != 3) {
+    return param_1;
+  }
+  if (*(int *)(param_1 + 0x30) != 1) {
+    return param_1;
+  }
+  iVar1 = parse_icap_result_class_resp(*(undefined4 *)(param_1 + 0x104),param_2,param_3,&local_9);
+  *(int *)(param_1 + 0x3c) = iVar1;
+  if (*(int *)(param_1 + 0x3c) == 0) {
+    iVar1 = icap_error_2_camera_error(local_9);
+    *(int *)(param_1 + 0x3c) = iVar1;
+    if (*(int *)(param_1 + 0x3c) == 0) {
+      *(undefined4 *)(param_1 + 0x30) = 2;
+      goto LAB_00059230;
+    }
+  }
+  *(undefined4 *)(param_1 + 0x30) = 0;
+LAB_00059230:
+  if (*(int *)(param_1 + 0xb8) != 0) {
+    iVar1 = (**(code **)(param_1 + 0xb8))
+                      (*(undefined4 *)(param_1 + 0xa8),*(undefined4 *)(param_1 + 0x30),
+                       *(undefined4 *)(param_1 + 0x3c));
+  }
+  return iVar1;
+}
+
+
+
+//// FUN_0005927c @ 0005927c
+
+int FUN_0005927c(int param_1,undefined4 param_2,undefined4 param_3)
+
+{
+  int iVar1;
+  undefined4 local_14;
+  undefined4 local_10;
+  undefined1 local_9;
+  
+  local_10 = 0;
+  local_14 = 0;
+  iVar1 = param_1;
+  if (*(int *)(param_1 + 0x24) == 3) {
+    iVar1 = parse_icap_result_str_class_resp
+                      (*(undefined4 *)(param_1 + 0x104),param_2,param_3,&local_9,&local_14,&local_10
+                      );
+    *(int *)(param_1 + 0x3c) = iVar1;
+    if (*(int *)(param_1 + 0x3c) == 0) {
+      iVar1 = icap_error_2_camera_error(local_9);
+      *(int *)(param_1 + 0x3c) = iVar1;
+    }
+    if (*(int *)(param_1 + 0xcc) != 0) {
+      iVar1 = (**(code **)(param_1 + 0xcc))
+                        (*(undefined4 *)(param_1 + 0xa8),local_14,local_10,
+                         *(undefined4 *)(param_1 + 0x3c));
+    }
+  }
+  return iVar1;
+}
+
+
+
+//// FUN_0005935c @ 0005935c
+
+int FUN_0005935c(int param_1,undefined4 param_2,undefined4 param_3)
+
+{
+  int iVar1;
+  undefined4 local_14;
+  undefined4 local_10;
+  undefined1 local_9;
+  
+  local_10 = 0;
+  local_14 = 0;
+  iVar1 = param_1;
+  if (*(int *)(param_1 + 0x24) == 3) {
+    iVar1 = parse_icap_result_str_class_resp
+                      (*(undefined4 *)(param_1 + 0x104),param_2,param_3,&local_9,&local_14,&local_10
+                      );
+    *(int *)(param_1 + 0x3c) = iVar1;
+    if (*(int *)(param_1 + 0x3c) == 0) {
+      iVar1 = icap_error_2_camera_error(local_9);
+      *(int *)(param_1 + 0x3c) = iVar1;
+    }
+    if (*(int *)(param_1 + 0xd0) != 0) {
+      iVar1 = (**(code **)(param_1 + 0xd0))
+                        (*(undefined4 *)(param_1 + 0xa8),local_14,local_10,
+                         *(undefined4 *)(param_1 + 0x3c));
+    }
+  }
+  return iVar1;
+}
+
+
+
+//// FUN_0005943c @ 0005943c
+
+int FUN_0005943c(int param_1,undefined4 param_2,undefined4 param_3)
+
+{
+  int iVar1;
+  undefined1 local_9;
+  
+  iVar1 = param_1;
+  if (*(int *)(param_1 + 0x24) == 3) {
+    iVar1 = parse_icap_result_class_resp(*(undefined4 *)(param_1 + 0x104),param_2,param_3,&local_9);
+    *(int *)(param_1 + 0x3c) = iVar1;
+    if (*(int *)(param_1 + 0x3c) == 0) {
+      iVar1 = icap_error_2_camera_error(local_9);
+      *(int *)(param_1 + 0x3c) = iVar1;
+    }
+    if (*(int *)(param_1 + 0xd4) != 0) {
+      iVar1 = (**(code **)(param_1 + 0xd4))
+                        (*(undefined4 *)(param_1 + 0xa8),*(undefined4 *)(param_1 + 0x3c));
+    }
+  }
+  return iVar1;
+}
+
+
+
+//// FUN_000594f8 @ 000594f8
+
+int FUN_000594f8(int param_1,undefined4 param_2,undefined4 param_3)
+
+{
+  int iVar1;
+  undefined1 local_9;
+  
+  iVar1 = param_1;
+  if (*(int *)(param_1 + 0x24) == 3) {
+    iVar1 = parse_icap_result_class_resp(*(undefined4 *)(param_1 + 0x104),param_2,param_3,&local_9);
+    *(int *)(param_1 + 0x3c) = iVar1;
+    if (*(int *)(param_1 + 0x3c) == 0) {
+      iVar1 = icap_error_2_camera_error(local_9);
+      *(int *)(param_1 + 0x3c) = iVar1;
+    }
+    if (*(int *)(param_1 + 0xd8) != 0) {
+      iVar1 = (**(code **)(param_1 + 0xd8))
+                        (*(undefined4 *)(param_1 + 0xa8),*(undefined4 *)(param_1 + 0x3c));
+    }
+  }
+  return iVar1;
+}
+
+
+
+//// FUN_00059618 @ 00059618
+
+int FUN_00059618(int param_1,undefined4 param_2,undefined4 param_3)
+
+{
+  int iVar1;
+  undefined1 local_9;
+  
+  iVar1 = param_1;
+  if (*(int *)(param_1 + 0x24) == 3) {
+    iVar1 = parse_icap_result_class_resp(*(undefined4 *)(param_1 + 0x104),param_2,param_3,&local_9);
+    *(int *)(param_1 + 0x3c) = iVar1;
+    if (*(int *)(param_1 + 0x3c) == 0) {
+      iVar1 = icap_error_2_camera_error(local_9);
+      *(int *)(param_1 + 0x3c) = iVar1;
+    }
+    if (*(int *)(param_1 + 0xe0) != 0) {
+      iVar1 = (**(code **)(param_1 + 0xe0))
+                        (*(undefined4 *)(param_1 + 0xa8),*(undefined4 *)(param_1 + 0x3c));
+    }
+  }
+  return iVar1;
+}
+
+
+
+//// FUN_000596d4 @ 000596d4
+
+int FUN_000596d4(int param_1,undefined4 param_2,undefined4 param_3)
+
+{
+  int iVar1;
+  undefined1 local_9;
+  
+  iVar1 = param_1;
+  if (*(int *)(param_1 + 0x24) == 3) {
+    iVar1 = parse_icap_result_class_resp(*(undefined4 *)(param_1 + 0x104),param_2,param_3,&local_9);
+    *(int *)(param_1 + 0x3c) = iVar1;
+    if (*(int *)(param_1 + 0x3c) == 0) {
+      iVar1 = icap_error_2_camera_error(local_9);
+      *(int *)(param_1 + 0x3c) = iVar1;
+    }
+    if (*(int *)(param_1 + 0xe4) != 0) {
+      iVar1 = (**(code **)(param_1 + 0xe4))
+                        (*(undefined4 *)(param_1 + 0xa8),*(undefined4 *)(param_1 + 0x3c));
+    }
+  }
+  return iVar1;
+}
+
+
+
+//// FUN_00059790 @ 00059790
+
+int FUN_00059790(int param_1,undefined4 param_2,undefined4 param_3)
+
+{
+  int iVar1;
+  undefined4 local_10;
+  undefined1 local_9;
+  
+  local_10 = 0;
+  iVar1 = param_1;
+  if (*(int *)(param_1 + 0x24) == 3) {
+    iVar1 = parse_icap_write_serial_resp
+                      (*(undefined4 *)(param_1 + 0x104),param_2,param_3,&local_9,&local_10);
+    *(int *)(param_1 + 0x3c) = iVar1;
+    if (*(int *)(param_1 + 0x3c) == 0) {
+      iVar1 = icap_error_2_camera_error(local_9);
+      *(int *)(param_1 + 0x3c) = iVar1;
+    }
+    if (*(int *)(param_1 + 0xe8) != 0) {
+      iVar1 = (**(code **)(param_1 + 0xe8))
+                        (*(undefined4 *)(param_1 + 0xa8),local_10,*(undefined4 *)(param_1 + 0x3c));
+    }
+  }
+  return iVar1;
+}
+
+
+
+//// FUN_0005985c @ 0005985c
+
+int FUN_0005985c(int param_1,undefined4 param_2,undefined4 param_3)
+
+{
+  int iVar1;
+  undefined4 local_14;
+  undefined4 local_10;
+  undefined1 local_9;
+  
+  local_10 = 0;
+  local_14 = 0;
+  iVar1 = param_1;
+  if (*(int *)(param_1 + 0x24) == 3) {
+    iVar1 = parse_icap_serial_data
+                      (*(undefined4 *)(param_1 + 0x104),param_2,param_3,&local_9,&local_10,&local_14
+                      );
+    *(int *)(param_1 + 0x3c) = iVar1;
+    if (*(int *)(param_1 + 0x3c) == 0) {
+      iVar1 = icap_error_2_camera_error(local_9);
+      *(int *)(param_1 + 0x3c) = iVar1;
+    }
+    if (*(int *)(param_1 + 0xec) != 0) {
+      iVar1 = (**(code **)(param_1 + 0xec))
+                        (*(undefined4 *)(param_1 + 0xa8),local_10,local_14,
+                         *(undefined4 *)(param_1 + 0x3c));
+    }
+  }
+  return iVar1;
+}
+
+
+
+//// FUN_0005999c @ 0005999c
+
+int FUN_0005999c(int param_1,undefined4 param_2,undefined4 param_3)
+
+{
+  int iVar1;
+  undefined1 local_9;
+  
+  if (*(int *)(param_1 + 0x24) != 3) {
+    return param_1;
+  }
+  if (*(int *)(param_1 + 0x34) != 1) {
+    return param_1;
+  }
+  iVar1 = parse_icap_result_class_resp(*(undefined4 *)(param_1 + 0x104),param_2,param_3,&local_9);
+  *(int *)(param_1 + 0x3c) = iVar1;
+  if (*(int *)(param_1 + 0x3c) == 0) {
+    iVar1 = icap_error_2_camera_error(local_9);
+    *(int *)(param_1 + 0x3c) = iVar1;
+    if (*(int *)(param_1 + 0x3c) == 0) {
+      *(undefined4 *)(param_1 + 0x34) = 2;
+      goto LAB_00059a50;
+    }
+  }
+  *(undefined4 *)(param_1 + 0x34) = 0;
+LAB_00059a50:
+  if (*(int *)(param_1 + 0xf4) != 0) {
+    iVar1 = (**(code **)(param_1 + 0xf4))
+                      (*(undefined4 *)(param_1 + 0xa8),*(undefined4 *)(param_1 + 0x34),
+                       *(undefined4 *)(param_1 + 0x3c));
+  }
+  return iVar1;
+}
+
+
+
