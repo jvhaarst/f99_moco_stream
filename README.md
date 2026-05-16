@@ -71,8 +71,9 @@ replies `Can't parse request.` and drops the connection.
 | `/get_params.cgi` | Read all configurable params |
 | `/set_params.cgi?<k>=<v>&save=1` | Write params (see "accepted fields" below) |
 | `/get_properties.cgi` | Static device info |
-| `/get_status.cgi` | Runtime state snapshot: `time, alarm, record, network, wifi_signal_level, disk_capability, ddns, ntp, upnp, ...` |
-| `/get_log.cgi` | Recent auth-event log (each entry: `event, t, user, ip`) |
+| `/get_status.cgi` | Runtime state snapshot (see example below) |
+| `/get_log.cgi` | Recent auth-event log; each entry has `event` (e.g. `65536` = successful login), `t` (epoch — RTC has no NTP and drifts), `user`, `ip` |
+| `/read_comm.cgi` | Read from `/dev/ttyAMA1` serial. Returns `{"error":0,"data":[]}` here; no peer on the bus on this device (the Micro Drone variant of this firmware uses it for flight-controller traffic). |
 | `/snapshot.cgi?resolution=N` | Single JPEG. Valid `N`: 2, 6, 11. *Side effect: persists N as the global `resolution` field.* |
 | `/snapshot.cgi?streamid=N` | Single JPEG; `N` ∈ {0..4}. Renders at the current global `resolution` (does NOT use the per-`streamN_resolution` profile, despite the name). ~80 % faster per request than the `resolution=` variant. |
 | `/check_user.cgi` | Foscam-style auth check. Returns `var group=131071; var user='admin'; var pwd='';` on success, `var group=-1;` on failure. |
@@ -97,6 +98,47 @@ exists.
 Anything not on that list returns `error:-2`. In particular `enable_video`,
 `enable_audio` appear in `get_params` output but are read-only computed
 properties.
+
+### Example I/O
+
+```
+$ curl -sS "http://192.168.1.1:36299/get_status.cgi?user=admin&pwd=&json=1"
+{
+    "error": 0,
+    "time": 1582118906,   # epoch — RTC is stuck (no NTP), expect drift
+    "alarm": 0,           # motion-detect armed
+    "upnp": 0, "idk_upnp": 0,
+    "ntp": 0,
+    "record": 0,          # SD-card recording in progress
+    "disk": 0, "disk_capability": 0,    # no SD card
+    "ddns": 0,
+    "skype": 0, "tutk": 0, "ppcn_p2p": 0, "sosocam": 0,   # cloud paths, all off
+    "temperature": 0, "humidity": 0,    # no sensors
+    "network": 6,         # link state — 6 = AP mode active
+    "wps": 0,
+    "health": 0,
+    "wifi_signal_level": 0,
+    "power_level": 0
+}
+```
+
+```
+$ curl -sS "http://192.168.1.1:36299/get_log.cgi?user=admin&pwd=&json=1"
+{
+    "error": 0,
+    "log": [
+        { "event": 65536, "t": 1582118906, "user": "admin", "ip": "192.168.1.100" },
+        { "event": 65536, "t": 1582118731, "user": "admin", "ip": "192.168.1.100" },
+        { "event": 65536, "t": 1582118261, "user": "admin", "ip": "192.168.1.100" },
+        { "event": 65536, "t": 1582118029, "user": "admin", "ip": "192.168.1.100" }
+    ]
+}
+```
+
+The log is in newest-first order, capped (only a handful of entries kept).
+`event=65536` (`0x10000`) is "successful login by `user` from `ip`"; failed
+auth uses a different code. `t` values are camera-local epoch — same drifting
+clock as `get_status.time`.
 
 ### Operational gotchas
 
