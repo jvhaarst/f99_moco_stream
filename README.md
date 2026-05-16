@@ -81,7 +81,7 @@ replies `Can't parse request.` and drops the connection.
 | `/list_records.cgi`, `/list_subrecords.cgi?t=<id>`, `/search_record.cgi?from=<ts>` | SD card recording metadata |
 | `/get_record.cgi?path=<path>` | Download a clip |
 | `/get_thumb.cgi?t=<id>&no=<n>` | Recording thumbnail |
-| `/ptz_control.cgi?command=N[&param=M]` | PTZ. Endpoint exists; always `error:-2` here because no motor. Real commands from the SDK: 16=set_boot_preset (with `param=N`), 18=get_pt_pos. |
+| `/ptz_control.cgi?command=N[&param=M]` | PTZ. Endpoint exists; always `error:-2` here because no motor. Full command table below. |
 | `/format_sd.cgi`, `/restore_factory.cgi`, `/restore.cgi` | Admin. `/restore.cgi` is distinct from `/restore_factory.cgi` and always returns `error:-6` (presumably "no backup available"). |
 
 Unknown paths return HTTP 200 with body `File not found.` (exactly 15 bytes).
@@ -136,9 +136,41 @@ $ curl -sS "http://192.168.1.1:36299/get_log.cgi?user=admin&pwd=&json=1"
 ```
 
 The log is in newest-first order, capped (only a handful of entries kept).
-`event=65536` (`0x10000`) is "successful login by `user` from `ip`"; failed
-auth uses a different code. `t` values are camera-local epoch — same drifting
-clock as `get_status.time`.
+`t` values are camera-local epoch — same drifting clock as `get_status.time`.
+
+Event ID classes (per the upstream [Reecam wiki](http://wiki.reecam.cn/CGI/Status?setlang=en); confirmed against this firmware where observed):
+
+| Event ID | Class | Meaning |
+|---|---|---|
+| `0x00000` | System | Device starts |
+| `0x00001` | System | HTTPS error |
+| `0x00002` | System | Disk space full |
+| `0x00003` | System | Disk error |
+| **`0x10000`** (= 65536) | User | Authorised login — *what we see in the log above* |
+| `0x10001` | User | Login denied |
+| `0x10002` | User | Session access rejected |
+| `0x10003` | User | Session created |
+| `0x10004` | User | Session ended by user |
+| `0x10005` | User | Session terminated by device |
+| `0x20000` – `0x20009` | Mail | Send-mail result codes (`0` success, `1`..`9` various failures) |
+| `0x30000` | Alarm | Alarm stop |
+| `0x30001` | Alarm | Motion-detection alarm |
+| `0x30002` | Alarm | External alarm |
+| `0x30003` | Alarm | Sound-detection alarm |
+| `0x30004` | Alarm | Alarm action failed |
+
+`get_status` field semantics (also from the wiki):
+
+| Field | Meaning |
+|---|---|
+| `alarm` | 0=none, 1=motion, 2=external, 3=audio-detect |
+| `upnp` | 0=no action, 1=success, -1 no IGD, -2 invalid IGD, -3 op failed |
+| `ntp` | 0=no action, 1=success, 2=fail |
+| `record` | 0=not recording, 1=recording |
+| `disk` | 0=no disk, -1=error, -2=full, >0 = % free |
+| `ddns` | Long enum, by provider (3322 100-113, dyndns 200-212, oray 300-306, 9299 400-405, NOIP 500-507, …) |
+| `tutk`, `skype` | TUTK / Skype P2P logged-in / failure enums (off-by-default on this build) |
+| `network` | Bit/enum for the active link; `6` observed in AP mode |
 
 ### Operational gotchas
 
@@ -165,6 +197,29 @@ clock as `get_status.time`.
   this firmware; remaining root routes are UART pads on the board or
   `/upgrade.cgi` firmware injection.
 
+### PTZ command codes
+
+For reference — `ptz=0` on this device so `/ptz_control.cgi` always returns `error:-2`, but the codes are documented in the [Reecam wiki](http://wiki.reecam.cn/CGI/Controls?setlang=en) and used unchanged by the SDK:
+
+| `command` | Action | `param` |
+|---|---|---|
+| 0 | Stop vertical | — |
+| 1 / 2 | Up / Down | step count (0 = unlimited) |
+| 3 | Stop horizontal | — |
+| 4 / 5 | Left / Right | step count |
+| 6 | Stop all | — |
+| 7 / 8 / 9 / 10 | Up-left / Up-right / Down-left / Down-right | step count |
+| 11 | Calibrate | — |
+| 12 | Center | — |
+| 13 / 14 / 15 | Cruise vertical / horizontal / trajectory | laps (0 = unlimited) |
+| 16 | Set preset (admin only) | 1..32 |
+| 17 | Goto preset | 1..32 |
+| 18 / 19 / 20 | Stop zoom / Zoom wide / Zoom tele | step count |
+| 21 / 22 / 23 | Aperture stop / open / close | step count |
+| 24 | IR light (disabled in firmware) | 0=off, 1=on |
+| 25 | Alarm IO output | 0=low, 1=high |
+| 26 / 27 / 28 | Focal stop / closer / farther | step count |
+
 ### Probed and confirmed not to exist on this firmware
 
 `videostream.cgi`, `livestream.cgi`, `stream.cgi`, `live.cgi`, `mjpeg.cgi`,
@@ -183,11 +238,19 @@ clock as `get_status.time`.
 `main.html`, `/`. No web UI is served.
 
 Also probed against the [Micro Drone 3.0 Reecam build endpoint list](http://gw.tnode.com/drone/micro-drone-3-0-camera-api/)
+and the canonical [Reecam wiki](http://wiki.reecam.cn/CGI/Overview?setlang=en),
 and confirmed absent on this MOQO firmware: `videostream.cgi`, `av.asf`,
 `backup.cgi`, `wifi_scan.cgi`, `test_wifi_connected.cgi`,
 `is_mjpeg_stream_exist.cgi`, `get_badauth.cgi`, `get_session_list.cgi`,
-`get_cur_ir_adc_value.cgi`. There is **no HTTP video stream** on this build —
-live video is ICAP-only.
+`get_cur_ir_adc_value.cgi`, `create_session.cgi`, `close_session.cgi`,
+`mail_test.cgi`. There is **no HTTP video stream** on this build — live video
+is ICAP-only. Session-based auth (the wiki's preferred method) is also
+absent; only query-string `?user=&pwd=` works.
+
+`/upgrade.cgi` and `/ptz_control.cgi` are present (a GET returns `{"error":-2}`
+rather than `File not found.`) but reject everything: ptz because no motor,
+upgrade because it needs a POST multipart body and a matching firmware
+signature. Not exercised — bricking risk.
 
 ## ICAP binary protocol (live video)
 
